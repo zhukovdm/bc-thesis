@@ -45,3 +45,5 @@ The source code in this repository is based on the following templates.
 - https://github.com/exaexa/better-mff-thesis
 - https://github.com/exaexa/simple-mff-poster
 - https://github.com/mff-cuni-cz/cuni-thesis-validator
+
+University and faculty logos are a property of the respective universities and faculties.
