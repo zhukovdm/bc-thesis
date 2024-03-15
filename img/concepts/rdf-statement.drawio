@@ -1,0 +1,19 @@
+<mxfile host="app.diagrams.net" modified="2023-10-24T12:47:59.048Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36" etag="g6hroezgIj5rhRfHwuqf" version="22.0.6" type="device">
+  <diagram name="Page-1" id="6i7e1ZnUqscgbApKAWBu">
+    <mxGraphModel dx="371" dy="201" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="IQ9Pw8yD5umx067SiVbr-1" value="http://xmlns.com/foaf/0.1/knows" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classicThin;endFill=1;" parent="1" source="vMb8d6KQLOxJ769gXlaK-1" target="vMb8d6KQLOxJ769gXlaK-2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vMb8d6KQLOxJ769gXlaK-1" value="http://example.org/people/alice#me" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="40" width="220" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="vMb8d6KQLOxJ769gXlaK-2" value="http://example.org/people/bob#me" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="140" width="220" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

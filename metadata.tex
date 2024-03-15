@@ -1,0 +1,48 @@
+\def\ThesisTitleCZ{Webová aplikace pro vyhledávání pěších tras s ohledem na klíčová slova}
+\def\ThesisTitleEN{Web application for keyword-aware walking route search}
+
+\def\ThesisAuthor{Dmitry Zhukov}
+
+\def\YearSubmitted{2024}
+
+\def\DepartmentCZ{Katedra softwaro\-vého inženýrství}
+\def\DepartmentEN{Department of Software Engineering}
+
+\def\DeptTypeCZ{Katedra}
+\def\DeptTypeEN{Department}
+
+\def\Supervisor{doc.~Mgr.~Martin~Nečaský,~Ph.D.}
+
+\def\SupervisorsDepartmentCZ{Katedra softwaro\-vého inženýrství}
+\def\SupervisorsDepartmentEN{Department of Software Engineering}
+
+\def\StudyProgramme{Computer Science}
+\def\StudyBranch{Programming and Software Development}
+
+\def\Dedication{
+I am sincerely grateful to \Supervisor~for the time spent guiding me through this thesis, all the great advice, and many fruitful discussions that led to a better result.
+}
+
+\def\AbstractCZ{
+Většina mainstreamových webových mapových aplikací nabízí vyhledávání tras založené na poloze. Uživatel zadává konkrétní místa a~určuje jejich pořadí. Na základě těchto vstupů systém naplánuje cestu. V~předložené práci se věnujeme vývoji webové aplikace, která umožní uživatelům formulovat vyhledávací dotazy pomocí kategorií, z~nichž každá se skládá z~klíčového slova a~atributových filtrů. Nalezená cesta nutně prochází alespoň jedním místem z~každé kategorie. Vyhledávací procedura je pak formalizována jako varianta zobecněného problému obchodního cestujícího a~je řešena pomocí několika heuristik s~polynomiální časovou složitostí.
+
+Aplikace využívá třívrstvou architekturu. Frontend je implementován jako jedno\-strán\-ková webová aplikace psaná v~jazyce TypeScript s~použitím knihovny React. Backend je navržen za pomocí ASP.NET frameworku. Používáme datovou sadu OpenStreetMap a~dva znalostní grafy, konkrétně Wikidata a~DBPedia, jako podklad pro konceptuální model. Data jsou předzpracována a~uložena do databáze MongoDB, která zároveň slouží pro efektivní dotazování. OSRM routovací služba pomáhá s~výpočtem nejkratších cest a~odhadem vzdáleností.
+
+Aplikace ukládá uživatelská data decentralizovaným způsobem, a~to buď do IndexedDB nebo Solid podu. První možnost představuje databázi integrovanou do webového prohlížeče, zatímco ta druhá je součástí nově vznikající technologie, která svým uživatelům poskytuje úplnou kontrolu nad fyzickým umístěním jejich dat a~přístupovými právy.
+}
+
+\def\AbstractEN{
+Most mainstream web mapping applications implement location-based direction search. The typical workflow involves constructing an explicit sequence of places to visit. In this thesis, we aim to develop a web application that lets users formulate search queries in terms of categories, each composed of a keyword and attribute filters. A resulting route passes through at least one place from each cat\-egory. The search procedure is formalized as a variant of the generalized Traveling Salesman Problem and solved with the help of polynomial-time heuristics.
+
+The application follows the three-tier architecture pattern. The frontend is~imple\-mented as a single-page application written in TypeScript using the React library, while the backend is programmed using the ASP.NET framework. We utilize~the OpenStreetMap dataset and two knowledge graphs, Wikidata and DBPedia, as the basis for the conceptual model. Data is preprocessed and stored in MongoDB, which also serves as an efficient index. The OSRM routing engine helps cal\-cu\-late shortest paths and estimate network distances.
+
+Last but not least, the application stores user data in a decentralized way, either in IndexedDB or a Solid pod. The former is a standardized in-browser database, while the latter is part of an emerging technology that gives users control over~the physical location of their data and access rights.
+}
+
+\def\KeywordsCZ{
+  {prostorové dotazy} {vyhledávání tras} {osobní data} {Solid} {otevřená data}
+}
+
+\def\KeywordsEN{
+  {spatial queries} {route search} {personal data} {Solid} {open data}
+}

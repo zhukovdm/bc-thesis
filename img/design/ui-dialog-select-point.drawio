@@ -1,0 +1,52 @@
+<mxfile host="app.diagrams.net" modified="2023-11-07T11:54:34.245Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" version="22.0.8" etag="lvzCCW7V_7Yhzh-XaXcN" type="device">
+  <diagram id="WysfpW8huvvms3Oi3d2Z" name="Page-1">
+    <mxGraphModel dx="931" dy="446" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ntjmXPxv7qvze88W8LsQ-2" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="200" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="ntjmXPxv7qvze88W8LsQ-3" value="Select point" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#000000;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="50" y="50" width="150" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ntjmXPxv7qvze88W8LsQ-4" value="" style="endArrow=none;html=1;rounded=0;strokeWidth=1;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="210" y="70" as="sourcePoint" />
+            <mxPoint x="230" y="50" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ntjmXPxv7qvze88W8LsQ-5" value="" style="endArrow=none;html=1;rounded=0;strokeWidth=1;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="230" y="70" as="sourcePoint" />
+            <mxPoint x="210" y="50" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ntjmXPxv7qvze88W8LsQ-6" value="Confirm" style="rounded=1;whiteSpace=wrap;html=1;fontColor=#000000;fontStyle=0;fillColor=#E6E6E6;" vertex="1" parent="1">
+          <mxGeometry x="170" y="220" width="60" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ntjmXPxv7qvze88W8LsQ-7" value="Add from the map:" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="50" y="90" width="110" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ntjmXPxv7qvze88W8LsQ-8" value="" style="html=1;verticalLabelPosition=bottom;align=center;labelBackgroundColor=#ffffff;verticalAlign=top;strokeWidth=2;strokeColor=#808080;shadow=0;dashed=0;shape=mxgraph.ios7.icons.add;fontColor=#808080;" vertex="1" parent="1">
+          <mxGeometry x="160" y="90" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ntjmXPxv7qvze88W8LsQ-9" value="OR" style="endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="50" y="130" as="sourcePoint" />
+            <mxPoint x="230" y="130" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ntjmXPxv7qvze88W8LsQ-10" value="Select from your Favorites:" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="50" y="150" width="170" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ntjmXPxv7qvze88W8LsQ-11" value="Place" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;align=left;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="50" y="180" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ntjmXPxv7qvze88W8LsQ-12" value="" style="html=1;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;shadow=0;dashed=0;strokeWidth=2;shape=mxgraph.ios7.misc.down;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="213" y="187" width="12" height="6" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

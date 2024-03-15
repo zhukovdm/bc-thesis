@@ -1,0 +1,62 @@
+\chapwithtoc{Introduction}\label{chap:introduction}
+
+Maps have undoubtedly played an important role in human history, helping to satisfy our innate urge to explore and navigate the surrounding world. Cartography, the science of mapmaking, has always evolved simultaneously with the progress in other fields of knowledge, gradually enhancing its methods. The invention of the World Wide Web has revolutionized numerous areas of our life. In particular, many web mapping platforms emerged at that time, pushing forward the frontiers of cartography.
+
+Plewe \cite{plewe07} described four generations of web maps that appeared on the market up to 2007, ranging from simple static pictures to more advanced ones with dynamic elements. He pointed out that not only had they become available to the public, but users had also got a tool for creating and sharing content. Tsou \cite{tsou11} has speculated that these services would grow into more user-centered products with ubiquitous access via mobile devices, crowdsourced by amateurs and part-timers. A decade later, geocoding, satellite-based navigation, and real-time traffic information, to name a few, are all examples of advanced services that we use on a daily basis.
+
+Let us consider one specific task that the majority of active travelers have tackled at least once. Suppose a person has just arrived at the train station of an unfamiliar city. Due to a late check-in, they might decide to visit several places of different kinds (gallery, museum, etc.) on the way to the hotel. There are no other limitations on where the points of interest reside, provided that the total distance is not too large. While initial and terminal locations are known upfront, extra effort needs to be made to define waypoints. A typical user interaction with mainstream applications would involve an iterative process of building a route that includes the following steps applied for each waypoint:
+
+\begin{enumerate}
+\item Searching a set of places that might satisfy imposed constraints.
+\item Appending one of them to the sequence, with possible manual reordering.
+\item New route is recalculated and presented to the user right after any change is introduced into the sequence configuration.
+\end{enumerate}
+
+The main advantage of this procedure is the ability of the user to decide which points will appear on the route. We may also observe that once a place is added to the sequence, it loses the connection to the search context. The place is then treated as a simple point on the map. This leads to two significant drawbacks. Firstly, the found routes become increasingly difficult to revisit and reason about as time passes. The far more important problem is that all three steps must be repeated for each waypoint, leading to a poor user experience.
+
+\vspace{0.5em}
+
+Another issue we would like to address is related to user data management. Modern web applications often function as centralized authorities, allowing third parties to access their functionality through personal profiles. Typically, a user agreement specifies that the service provider is responsible for storing and processing data, transferring genuine data ownership from the signee.
+
+Below, we give a non-exhaustive list of unpleasant situations that a subscriber of such a service might encounter in practice.
+
+\begin{itemize}
+\item The service provider has decided to sell or grant access to user data to other companies for profit.
+\item The user wants to access the same data from different applications or transfer data to another provider offering better conditions.
+\item The service provider has permanently shut down servers without notifying the client base.
+\item The user has accomplished all their goals and requested the deletion of their profile along with the data. Instead, the service provider has deactivated it until the user returns.
+\end{itemize}
+
+\subsection*{The goals of the thesis}
+
+The main goal of the thesis is to design, develop and test a web application that attempts to deal with both concerns. The final solution shall incorporate the following subgoals.
+
+\begin{enumerate}[label=\textbf{G\arabic*}]
+\item\label{itm:g-search} Propose an alternative view on geographical data and devise a search procedure based on exact categorical matching that reduces user input while keeping search context and results together.
+\item\label{itm:g-decentral} Manage personal data in a decentralized manner by decoupling them from the application, allowing users to have full control over their physical location and access rights.
+\item\label{itm:g-ux} Provide a user experience similar to other mainstream applications.
+% \item\label{itm:g-oss} Utilize various open datasets as a basis for the conceptual model.\\[0.3em] \emph{Geographic datasets are often inaccessible due to proprietary licensing, the unwillingness of the owner to share them, or legal restrictions. One alternative is to encourage individuals to contribute to open datasets by developing useful applications on top of them.}
+\end{enumerate}
+
+Several aspects of the system are intentionally simplified as proper implementation would introduce non-trivial complexity with little gain for the thesis.
+
+\begin{itemize}
+\item Support for various commuting profiles (walking, driving, public transport, hybrid, etc.) is limited to \underline{walking} mode only.
+\item The system implements neither direct nor reverse geocoding.
+\end{itemize}
+
+\subsection*{Document overview}
+
+The thesis is divided into \emph{five} chapters, evolving from an in-depth understand\-ing of the domain to the application of testing techniques.
+
+Chapter~\textbf{\ref{chap:concepts}} focuses on standards and principles for data organization and publishing on the modern Web. After that, we provide a brief overview of \acs{solid}~technology, which stores user data in an external pod.
+
+Chapter~\textbf{\ref{chap:analysis}} analyzes the system requirements that the application should comply with and the use cases it should support. Next, we explore available sources of geodata and propose a conceptual model. In the final part, we compare existing applications with similar capabilities based on eight criteria.
+
+Chapter~\textbf{\ref{chap:design}} discusses the user interface, architecture, the technology stack used during implementation, and how the selected data sources should be queried. Last but not least, the route search procedure is formalized, and efficient heuristics are selected.
+
+Chapter~\textbf{\ref{chap:implementation}} outlines notable implementation details, libraries, limitations, and potential pitfalls we addressed to achieve the desired functionality.
+
+Chapter~\textbf{\ref{chap:testing}} explains the application of testing techniques, including automated, performance, and usability tests, for improving the quality of the application, with the results presented in the form of graphs and tables.
+
+In addition, the Administrator's guide in Attachment~\textbf{\ref{sec:documentation}} describes a step-by-step procedure for preparing a dataset and running the application on a personal computer.

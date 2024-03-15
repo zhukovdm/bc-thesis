@@ -1,0 +1,380 @@
+\chapter{Implementation}\label{chap:implementation}
+
+High-level architectural decisions and a brief overview of the technology stack have already been covered in the previous chapter. This part of the thesis clarifies notable implementation details and the reasons behind them.
+
+\section{Prerequisites}
+
+To acquire the tools necessary for setting up the development environment, preparing the dataset, and writing and testing source code, follow the steps outlined in Attachment~\ref{sec:prerequisites}. The source code of the application is published at
+
+\begin{center}
+\texttt{\href{https://github.com/zhukovdm/smartwalk}{https://github.com/zhukovdm/smartwalk}}.
+\end{center}
+
+\section{Single-page application}
+
+The frontend is a \emph{single-page application} written in modern React, with \emph{components} and \emph{hooks} serving as its basic building blocks. Components are functions that return renderable structures, while hooks are functions that provide limited access to React global state and other features.
+
+The corresponding source code is located in the \texttt{./app/frontend/} folder.
+
+\subsection{Toolchain}
+
+To streamline the configuration process, \emph{SmartWalk} was bootstrapped with Create React App (CRA)\footnote{\href{https://create-react-app.dev/}{https://create-react-app.dev/}}. The initial template is a small, production-ready application that includes a transpiler, development server with hot reload, bundler, and various other tools. It is worth noting that CRA is no longer recommended by the React team, as their focus has shifted towards React-based frameworks.
+
+\subsection{Visual components}
+
+Branding is unnecessary for \emph{SmartWalk} at this phase of development. Hence, Material UI\footnote{\href{https://mui.com/material-ui/}{https://mui.com/material-ui/}} has been added as an external dependency. This advanced library consists of visually appealing components designed for desktop and mobile devices and the collection of icons. Moreover, navigation \texttt{Drawer} and \texttt{Autocomplete} with asynchronous data fetching were found particularly useful and less common across other popular React-based libraries.
+
+The only functionality we missed in Material UI was a special handling for \texttt{img} HTML elements. Since the detailed view of a place might point to a high-quality image, it could take time for a browser to load it. We have employed mui-image\footnote{\href{https://github.com/benmneb/mui-image}{https://github.com/benmneb/mui-image}} to indicate that the picture is loading by displaying a spinner that reserves space and prevents unexpected content shifts.
+
+\subsection{Client-side routing}
+
+Navigation between panels is realized by means of the React Router\footnote{\href{https://reactrouter.com/}{https://reactrouter.com/}} library. The \texttt{BrowserRouter} wraps the entire application and makes the desired functionality accessible within the nested components. The \texttt{Routes} component acts as a selector, ensuring the proper panel is rendered based on the current path.
+
+The code snippet below is a simplified showcase from the codebase; the content of a panel should appear within the \texttt{Drawer}, assuming that the \texttt{PanelDrawer} is~a child of a \texttt{BrowserRouter}.
+
+\begin{minted}[fontsize=\footnotesize]{text}
+function PanelDrawer() {
+  return (
+    <Drawer>
+      <Routes>
+        <Route path={"/search/routes"} element={<SearchRoutesPanel />} />
+        ... more Route instances follow ...
+      </Routes>
+    </Drawer>
+  );
+}
+\end{minted}
+
+A total of \emph{12} distinct paths were defined to accommodate the panels proposed in Section~\ref{sec:user-interface}.
+
+\begin{itemize}
+\item \texttt{/search} + \texttt{/routes}, \texttt{/places}, \texttt{/direcs} (search panels)
+\item \texttt{/result} + \texttt{/routes}, \texttt{/places}, \texttt{/direcs} (result panels)
+\item \texttt{/entity/places/\{smartId\}} (detailed view of a place)
+\item \texttt{/favorites} (view into the private storage)
+\item \texttt{/viewer} + \texttt{/route}, \texttt{/place}, \texttt{/direc} (entity viewer)
+\item \texttt{/session/solid} (\acs{solid} session)
+\end{itemize}
+
+Hooks \texttt{useNavigate} and \texttt{useParams} are used to navigate between panels and extract \texttt{smartId} from the path, respectively.
+
+\subsection{State management}
+
+Suppose a user has configured a couple of categories with many attributes for a route search. Before submitting the query, they decide to check whether a route with similar preconditions exists. The panel is then switched to the ``Favorites'' view and back to the request form.
+
+Changing a path also entails removing (or unmounting) elements associated with the previous panel from the DOM tree of the browser. If categories were kept in the component's local state, they would disappear just before the new content is rendered. We need a systematic approach to avoid this undesired behavior so that the state of a panel is restored as long as a hard reset or page reload has not been performed.
+
+Redux Toolkit\footnote{\href{https://redux-toolkit.js.org/}{https://redux-toolkit.js.org/}} is a library for modeling and managing an application state composed of \emph{slices}. \emph{Reducers} are functions that, given the previous state and an input value, unambiguously define how to transition to the next state. Properties of a slice can be modified directly due to the Immer\footnote{\href{https://immerjs.github.io/immer/}{https://immerjs.github.io/immer/}} library used in the background; the slice is an immutable proxy. A simple example is shown in the code snippet below.
+
+\begin{minted}[fontsize=\footnotesize]{text}
+const slice = createSlice({
+  name: "slice",
+  initialState: { item: 0 },
+  reducers: {
+    setItem: (state, action) => { state.item = action.payload; }
+  }
+});
+\end{minted}
+
+A distinct slice is implemented for each panel, see files ending with \texttt{Slice.ts} in the \texttt{./src/features/} folder.
+
+The state is accessed and manipulated through custom hooks \texttt{useAppDispatch} and \texttt{useAppSelector} as follows. A new value of \texttt{item} appears in the \texttt{h1} upon~each increment automatically.
+
+\begin{minted}[fontsize=\footnotesize]{text}
+function Component() {
+  const dispatch = useAppDispatch();
+  const { item } = useAppSelector((state) => state);
+  return (
+    <h1>{item}</h1>
+    <button onClick={() => { dispatch(setItem(item + 1)); }}>
+      Increment
+    </button>
+  );
+}
+\end{minted}
+
+Unfortunately, Redux Toolkit is not recommended for keeping non-serializable data\footnote{\href{https://redux.js.org/faq/organizing-state}{https://redux.js.org/faq/organizing-state}}, such as class instances. For this reason, we store \texttt{Map}, \texttt{Storage}, and cached backend responses (keyword suggestions based on prefixes and full rep\-re\-sen\-ta\-tions of retrieved places) using the standard Context~API\footnote{\href{https://react.dev/learn/passing-data-deeply-with-context}{https://react.dev/learn/passing-data-deeply-with-context}}. In principle, only this container would be enough to achieve the same functionality. Nonetheless, there are two hidden drawbacks: components cannot subscribe for a part of the value, and we would need to write custom logic for modifying nested objects.
+
+\subsection{Device storage}
+
+% https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Using_IndexedDB
+
+The \texttt{DeviceStorage} class is an implementation of the \texttt{Storage} abstraction for storing entities on the user's device. The open question is which technology we should utilize. Saving files within the file system of an operating system brings additional overhead for users, as their addresses must be determined manually. Alternatively, we can employ one of the storages that come with a web browser.
+
+The \texttt{DeviceStorage} is a wrapper over IndexedDB \cite{indexeddb18}, a standardized data\-base for storing (un-)structured data with support for transactions and indexing. We distinguish the following two consecutive phases of its lifecycle.
+
+\begin{enumerate}
+\item Initialization of the database via creating three \emph{object stores} for each entity type: \texttt{routes}, \texttt{places}, and \texttt{direcs}. If it fails, the instance internally falls back to the \texttt{InmemStorage} and informs the user via the message box at the top of the ``Favorites'' panel, similar to the one in Figure~\ref{fig:ui-favorites}.
+\item \textbf{C}reate, \textbf{R}etrieve, \textbf{U}pdate, and \textbf{D}elete operations performed on the entities. Failed attempts raise exceptions that are eventually reported to the user.
+\end{enumerate}
+
+One disadvantage that many programmers may encounter when working with IndexedDB is that its \acs{api} does not support modern \emph{promises} but instead accepts event handlers. The \texttt{DeviceStorage} injects \texttt{resolve} and \texttt{reject} into the bodies of the corresponding callbacks.
+
+\subsection{Solid pod session}
+
+The \texttt{SolidStorage} class maintains a connection between the frontend and~a \acs{solid} pod. This class implements the same \texttt{Storage} interface; using it does~not make any difference from the programmer's perspective compared to other storages. However, the lifecycle of a \acs{solid} pod session is more involved and includes \emph{four} steps.
+
+\subsubsection{Authentication}
+
+First, the application should authenticate against a \acs{solid} server and acquire an identity. There are two mechanisms to achieve the same result: Solid-OIDC (recommended) and WebID-TLS \cite[Authentication]{solid22}.
+
+We do not delve deep into the subject, as our concerns are fulfilled by merely calling \texttt{login} from the solid-client-authn\footnote{\href{https://github.com/inrupt/solid-client-authn}{https://github.com/inrupt/solid-client-authn}} library and waiting until the browser opens an external page with an authentication form. Once the user enters credentials and allows the application to read the identity and access pods, the browser redirects back and opens the ``Solid Session'' panel depicted in Figure~\ref{fig:ui-solid-panel}.
+
+\subsubsection{Initialization}
+
+An activated pod should go through the process of initialization. Recall Section~\ref{ssec:personal-storage} where we have assumed that all data will be stored on a certain address. Thus, the procedure performs the following actions.
+
+\begin{enumerate}
+\item Attempt to create a destination folder for each entity type. Failures are \underline{not} reported, and existing resources are not affected.
+\item Retrieve the folder as a \texttt{SolidDataset} (prove the existence).
+\item Verify that this dataset is of type \texttt{BasicContainer}.
+\end{enumerate}
+
+\subsubsection{CRUD operations}
+
+Entities are created and altered using primitives from the solid-client\footnote{\href{https://github.com/inrupt/solid-client-js}{https://github.com/inrupt/solid-client-js}} library, such as asynchronous \texttt{overwriteFile}, \texttt{getFile}, and \texttt{deleteFile}. Data is stored in the form of binary \texttt{Blob} objects with the \texttt{application/json} media type.
+
+\subsubsection{Logging out}
+
+After a user clicks the ``Log out'' button, \texttt{logout} is called on the \acs{solid} default session, application's state resets, and the storage switches to a \texttt{DeviceStorage} instance.
+
+\subsection{Custom hooks}\label{ssec:custom-hooks}
+
+Standard React hooks were found to be insufficient to cover the needs of~our application. The fol\-low\-ing custom hooks were implemented to hide the com\-plex\-i\-ty of stateful logic.
+
+\begin{description}[font=\tt]
+\item[useFavorites] loads entities from the private storage into the Redux-based state container so that reading queries are resolved \underline{locally}.
+\item[useStoredSmarts] constructs a set of places with defined \texttt{smartId} that appear~in the private storage.
+\item[usePlaces] merges places in the result of a search and those in the private storage (with \texttt{name} replacement).
+\item[useSmartPlace] retrieves the cached representation of a place for a given \texttt{smartId} or fetches the object from the backend in case of a cache miss.
+\item[useKeywordAdvice] retrieves the cached keyword advice for a given prefix or calls the backend \acs{api}, similar to the previous hook.
+\end{description}
+
+There are a couple more supporting hooks. See source files whose names end with \texttt{Hooks.ts} in the \texttt{./src/features/} folder.
+
+\subsection{Calling API}
+
+The \texttt{SmartWalkAPI} abstraction is realized by the collection of functions defined in the \texttt{smartwalk.ts} file. The communication protocol is hidden in the bodies of these functions. A query could resolve with a value or fail with an exception.
+
+\subsection{Marker clustering}
+
+The map is one of the essential visual parts of the application, without which nav\-i\-ga\-tion through the road network would be hard to imagine. We use Leaflet\footnote{\href{https://leafletjs.com/}{https://leafletjs.com/}}, a minimalistic library, for managing map state, loading tiles, and drawing markers and geometries. The basic functionality of this library is extended via plugins.
+
+One interesting observation about \emph{SmartWalk} is that, according to Requirement~\ref{itm:f-search-places-cats}, place search queries are bounded only by a circle. There is a good~chance that a response might return thousands of places. Since Leaflet mounts each pin as a separate node to the DOM tree, rendering a large number of elements might cause the browser to hang or even crash.
+
+The current implementation imports the markercluster\footnote{\href{https://github.com/Leaflet/Leaflet.markercluster}{https://github.com/Leaflet/Leaflet.markercluster}} plugin as an external dependency to cluster markers on the client side in the main thread. We should admit that this solution is still not ideal; the user interface might hang for a while with large inputs. There are two possible approaches to improve clustering.
+
+\begin{itemize}
+\item Render clusters by a dedicated Web Worker on the client side. For example, supercluster\footnote{\href{https://github.com/mapbox/supercluster}{https://github.com/mapbox/supercluster}} is a library independent of Leaflet with suitable primitives.
+\item Render clusters on the server side. It is certainly an interesting option that simplifies the programming of new frontends. However, we might need to introduce additional containers into our architecture to facilitate this type of spatial query.
+\end{itemize}
+
+As we encountered performance issues with the clustering functionality later during implementation, improvements are deferred for future development.
+
+\subsection{JSON-LD representation}\label{ssec:jsonld-representation}
+
+Earlier, we stated the principles of \emph{\nameref{sec:linked-data}} and their positive impact on data discoverability and interoperability. This section is dedicated specifically to Requirement~\ref{itm:f-entity-management-jsonld}.
+
+The detailed view of any place from the public storage includes a \acs{jsonld} object with the following properties: name, longitude, latitude, keywords, and~links to the original entities with the \texttt{owl:sameAs} semantics. These properties are~guar\-an\-teed to be present due to the way data is prepared.
+
+Since the frontend is a single-page application, and representations are fetched on demand by \texttt{useSmartPlace}, it is obvious that this object should be generated dynamically. \texttt{EntityPlaceHelmet}, a custom component, injects a \texttt{script} element with the \texttt{application/ld+json} media type into the \texttt{head} of the page once the hook succeeds in retrieving a record by \texttt{smartId}.
+
+One might argue that the resulting \acs{jsonld} object has only a small number of properties, and the potential of knowledge graphs is underutilized. We neglect \acs{rdf} because the majority of records originate from the \acs{osm} dataset, where the meaning of keys is not defined.
+
+Another disadvantage of our approach is that JavaScript code should be ex\-e\-cut\-ed to construct the \acs{jsonld} representation. This directly impacts the ability of intelligent agents to understand the content. Perhaps a better approach would be to incorporate the \texttt{@context} into a backend response.
+
+Thus, the current implementation offers rather limited capabilities regarding data friendliness. These concerns and potential improvements in the way data is stored in a \acs{solid} pod are mentioned as directions for future research.
+
+\section{Web API application}
+
+The backend is a .NET solution that consists of the following \emph{four} projects.
+
+\begin{description}[font=\tt]
+\item[SmartWalk.Core] defines entities, algorithms, solvers, and core-level abstract interfaces used across the application.
+\item[SmartWalk.Application] prescribes the shape of query objects, provides domain-level input parsers and validators, along with separate handlers for each type of supported queries.
+\item[SmartWalk.Infrastructure] implements gateways to the containers discussed in Section~\ref{ssec:design-backend}.
+\item[SmartWalk.Api] serves as an entry point to the application with \acs{http} endpoints, middlewares, and controllers.
+\end{description}
+
+The source code is located in the \texttt{./app/backend/} folder. The toolchain~required for building, running, testing, and publishing the application is simplified to just one command-line utility named \texttt{dotnet}.
+
+\subsection{HTTP endpoints}\label{ssec:http-endpoints}
+
+We define \emph{five} \acs{http}-based endpoints with the supported \texttt{application/json} media type to facilitate the needs of the frontend. Words written in an emphasized typewriter \emph{\texttt{font}} symbolize query parameters.
+
+\begin{description}[font=\normalfont]
+\item[\texttt{GET /api/advice/keywords}]\phantom{}\\[0.3em]
+Obtain the \emph{\texttt{count}} most relevant keywords starting with \emph{\texttt{prefix}} and their attribute bounds.
+\item[\texttt{GET /api/search} + \texttt{/routes}, \texttt{/places}, \texttt{/direcs}]\phantom{} \\[0.3em]
+Three endpoints for handling search queries, with the only \emph{\texttt{query}} parameter set to a serialized and percent-encoded \acs{json} object.
+\item[\texttt{GET /api/entity/places/\{smartId\}}]\phantom{} \\[0.3em]
+Parameterless request fetching the full representation of a place by \texttt{smartId}.
+\end{description}
+
+The first and last endpoints are trivial. However, there are multiple options~for passing complex nested objects via the \ac{http}.
+
+The first idea that we may come up with is to place the object in the request's body. The \texttt{POST} method accepts bodies, but such a request could introduce side effects and alter the state of the server, ruling out caching. \texttt{GET} requests with bodies are less supported by standard libraries and are harder to send and cache. Nonetheless, the well-known search engine Elasticsearch defines \acs{api}s that accept this kind of request\footnote{\href{https://www.elastic.co/guide/en/elasticsearch/reference/8.11/api-conventions.html}{https://www.elastic.co/guide/en/elasticsearch/reference/8.11/api-conventions.html}} to perform search queries.
+
+Thus, we opted for the solution adopted by Wikidata and DBPedia, where~a percent-encoded \acs{sparql} query is expected in the \texttt{\emph{query}} parameter.
+
+\vspace{0.5em}
+
+Our \acs{api}~is documented using the Swashbuckle\footnote{\href{https://github.com/domaindrivendev/Swashbuckle.AspNetCore}{https://github.com/domaindrivendev/Swashbuckle.AspNetCore}} library, a toolset compatible with the OpenAPI\footnote{\href{https://www.openapis.org/}{https://www.openapis.org/}} specification, and published at
+
+\begin{center}
+\texttt{\href{https://app.swaggerhub.com/apis/zhukovdm/smartwalk/}{https://app.swaggerhub.com/apis/zhukovdm/smartwalk/}}.
+\end{center}
+
+\subsection{Controllers}
+
+% https://learn.microsoft.com/en-us/aspnet/core/fundamentals/apis?view=aspnetcore-6.0
+% https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-6.0
+% https://code-maze.com/aspnetcore-modelstate-validation-web-api/
+
+In ASP.NET Core, every \acs{http} request goes through a series of \emph{middleware components}, collectively forming a pipeline. A middleware performs an intended action on the input and invokes the next middleware or short-circuits the request.
+
+As part of the pipeline, the framework routes a request and calls an appropriate method on a custom \texttt{TController}, distinct for each \acs{http} endpoint defined in Section~\ref{ssec:http-endpoints}. All implemented controllers have internal structures similar to the one shown below.
+
+\begin{minted}[fontsize=\footnotesize]{text}
+class TController : ControllerBase {
+  public async Task<ActionResult<T>> Action([FromQuery] TRequest request) {
+    if (!new TValidator(...).Validate(request)) {
+      return new TResponder().Invalid();
+    }
+    try {
+      return new TResponder().Respond(await new THandler().Handle(request));
+    }
+    catch (...) {
+      return new TResponder().Failure();
+    }
+  }
+}
+\end{minted}
+
+Request-level and domain-level validations occur before a query object reaches the corresponding handler. The former is a standard middleware hidden in the pipeline before the \texttt{TController}, parsing the content of a request into a~schema-constrained \acs{json} object. The latter, executed by the \texttt{TValidator}, checks if the parsed object meets constraints imposed by the conceptual model. For example, ensuring the acyclicity of an arrow configuration is a domain-level concern.
+
+A malfunctioning database or routing engine may lead to an exception in the \texttt{THandler}. The \textbf{catch}-block gracefully manages unexpected failures.
+
+Errors are communicated to the frontend in the form of \acs{json} objects, with~the cor\-re\-spond\-ing \acs{http} status set by the \texttt{TResponder}. The reason for a failure is~in\-clud\-ed, as shown in~the code snippet below.
+
+\begin{minted}[fontsize=\footnotesize]{text}
+{
+  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "traceId": "...",
+  "errors": {
+    "query": [ "Cycle 0 → 1 → 2 → 0 detected." ]
+  }
+}
+\end{minted}
+
+\subsection{Gateways}
+
+% https://www.mongodb.com/developer/languages/csharp/
+
+As a result of Section~\ref{sec:architecture}, we identified \emph{four} abstractions vital for handling~all types of queries. Hence, their implementations are proposed based on the selected technology stack.
+
+The \texttt{TrieKeywordAdvicer} is a simple wrapper over PruningRadixTrie for finding the \emph{k} most relevant keywords. Please note that relevancy is measured based~on keyword occurrence; a higher value indicates that the number of places with this keyword is greater compared to other keywords. An instance of this abstraction~is populated with precalculated data from the database upon application start.
+
+The \texttt{MongoEntityStore} and \texttt{MongoEntityIndex} are gateways to the database, each with a distinct set of methods discussed in Section~\ref{ssec:design-database}. Data is retrieved using the \texttt{MongoClient} from the MongoDB.Driver\footnote{\href{https://www.nuget.org/packages/MongoDB.Driver}{https://www.nuget.org/packages/MongoDB.Driver}} library, which internally maintains a thread-safe\footnote{\href{https://www.mongodb.com/docs/drivers/csharp/v2.21/faq/\#std-label-csharp-faq-connection-pool}{https://www.mongodb.com/docs/drivers/csharp/v2.21/faq/\#std-label-csharp-faq-connection-pool}} connection pool.
+
+Data is fetched from an instance of \acs{osrm} through simple \acs{http} \texttt{GET} requests. The \texttt{OsrmRoutingEngine} is a stateless component that constructs a destination URL from the input, calls the \acs{api} \cite{osrm}, and converts the response into an output object.
+
+Infrastructural gateways are added to the dependency injection container as singletons during application start in the source file \texttt{Program.cs} and then injected into a controller's constructor.
+
+\begin{minted}[fontsize=\footnotesize]{text}
+builder.Services.AddSingleton<IContext>(new TContext()
+{
+  Gateway = new Gateway()
+});
+
+class TController : ControllerBase {
+  public TController(IContext ctx) {
+    this.ctx = ctx;
+  }
+}
+\end{minted}
+
+\subsection{Handlers}
+
+The purpose of handlers is to calculate results given the current context and valid user input. There is a one-to-one correspondence between \acs{http} endpoints, controllers, and handlers. One might observe that all of them, with the exception of the \texttt{SearchRoutesHandler}, have trivial implementations. Let us focus on~this par\-tic\-u\-lar example.
+
+To calculate routes, the \texttt{SearchRoutesHandler} performs the following steps.
+
+\begin{enumerate}
+\item Retrieve places matched by at least one category and lie within a bounding ellipse.
+\item Given places, create an instance of the \texttt{HaversineDistanceFunction}.
+\item Create an instance of the \texttt{SolverFactory} that accepts a distance function, arrow configuration, source, and target. Since the input parameters are the same for all routes, only one instance of the factory is necessary.
+\item Repeat unless the time has expired or there are no more places left.
+\begin{enumerate}
+\item Calculate a sequence of places using a solver instance provided by the factory. The \texttt{FloatSolver} solves the unconstrained variant, while the \texttt{ArrowSolver} is designed for the \acs{pcgtsp}.
+\item Find the shortest path connecting the points of this sequence.
+\item Include this path into the result if its distance is less than or equal to the upper bound; otherwise, disregard it.
+\item Filter out places that have appeared in the sequence.
+\end{enumerate}
+\end{enumerate}
+
+\section{Querying with MongoDB}
+
+Places and keywords are stored in MongoDB, a document-oriented NoSQL database with support for horizontal scaling and geospatial queries \cite{mongodb}. This~section addresses two concerns: indexes for achieving adequate performance and the query language for modeling attribute filters.
+
+\subsection{Indexes}
+
+% https://www.mongodb.com/docs/v4.4/core/index-text/#compound-index
+
+In NoSQL databases, indexes might be expensive due to possible sharding or the size of a collection. Therefore, only the \texttt{2dsphere} spatial index applied to the mandatory \texttt{location} field for each place is actively utilized.
+
+The indexed field is required to hold a GeoJSON object or a legacy coordinate pair\footnote{\href{https://www.mongodb.com/docs/v4.4/core/2dsphere/\#2dsphere-indexed-field-restrictions}{https://www.mongodb.com/docs/v4.4/core/2dsphere/\#2dsphere-indexed-field-restrictions}}. Since GeoJSON points contain arrays of coordinates, we adopt the latter approach, setting longitude to \texttt{lon} and latitude to \texttt{lat}. Using explicit fields makes them easier to access and improves the readability of generated doc\-u\-men\-ta\-tion.
+
+There are a few more key-based indexes, but they are not interesting~from an implementation perspective.
+
+\subsection{Operators}
+
+% https://www.mongodb.com/docs/v4.4/reference/operator/
+
+We claimed that MongoDB has the capability to express all types of attribute filters. The following operators of the MongoDB Query Language are used exactly for this reason.
+
+\begin{itemize}
+\item \texttt{\$exists} checks whether an attribute is defined on an object.
+\item \texttt{\$eq} compares a boolean-valued attribute with a given value.
+\item \texttt{\$gte} and \texttt{\$lte} bound numeric attributes above and below, respectively.
+\item \texttt{\$in} matches strings using a regular expression. When applied to an array, the same operator checks whether an element is present.
+\item Individual filters are concatenated by the operator \texttt{\$and}.
+\end{itemize}
+
+The geospatial operators listed below are utilized to perform search queries.
+
+\begin{itemize}
+\item \texttt{\$nearSphere} retrieves a set of places lying within a bounding circle. The~set is \emph{ordered} by the distance from the center.
+\item \texttt{\$geoWithin} returns places within an arbitrary polygon, with no assumed~ordering.
+\end{itemize}
+
+\section{Data pipelines}\label{sec:data-pipelines}
+
+Besides the application source code, there are small task-oriented programs in the \texttt{./data/} folder to carry out the data preparation phase outlined in Section~\ref{sec:data-preparation}.
+
+\begin{description}[font=\tt]
+\item[taginfo/] loads key statistics from Taginfo into key-specific \texttt{.json} files.
+\item[osm/] combines information stored in Taginfo files, \acs{osm} binary files, and fetched from Overpass~API to create new places or update existing ones.
+\item[wikidata-create/] creates simple stubs for places that do not exist yet.
+\item[wikidata-enrich/] updates the current dataset with the latest information from the Wikidata knowledge graph.
+\item[dbpedia/] does the same action as \texttt{wikidata-enrich/} but for DBPedia.
+\item[advice/] collects statistics about keywords and attributes across the dataset and recreates advice items.
+\item[dump/] dumps places and keywords into \texttt{.txt} files.
+\item[restore/] restores place and keyword collections from \texttt{.txt} dump files.
+\end{description}
+
+These programs are organized using one of the following general patterns. The way they are executed is described in Attachment~\ref{sec:documentation}, Administrator's guide.
+
+The first type of program iterates over entities from a source, processing them one by one. Records are transformed and loaded into a target individually. This approach is applied whenever there is a risk that a dataset is larger than the main memory.
+
+Another type of program includes an explicit ``\textbf{E}xtract, \textbf{T}ransform, and \textbf{L}oad'' (ETL) pipeline in its main function. It loads the dataset into the main memory, transforms raw objects, and loads them into a provided target. The code~snippet below captures the internal structure of these programs.
+
+\begin{minted}[fontsize=\footnotesize]{text}
+{
+  const e = await pipeline.e(new Source());
+  const t = await pipeline.t(e);
+  const l = await pipeline.l(new Target(), t);
+}
+\end{minted}

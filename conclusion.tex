@@ -1,0 +1,22 @@
+\chapwithtoc{Conclusion}\label{chap:conclusion}
+
+The primary goal of this thesis was to address the iterative nature of explicit location-based routing implemented by most mainstream web mapping applications. We designed, developed, and tested the web application that lets users to formulate route search queries in terms of categories, each composed of a keyword and attribute filters. A resulting route passes through at least one place~from each category. The search procedure is formalized as a variant of the generalized~Traveling Salesman Problem.
+
+We analyzed existing solutions and derived the unique set of requirements~and properties that our application should possess. Furthermore, we justified its rel\-e\-vancy by providing user stories based on real-life situations.
+
+The application follows the three-tier architectural pattern. The frontend~im\-plements a panel-based layout compatible with both desktop and mobile devices. The backend, database, and routing engine together form an efficient solver. We integrate information from several publicly available semi-structured and structured data sources to facilitate search queries. User data is stored in a decentralized way, with an in-browser database and \acs{solid} pod being used interchangeably.
+
+The application was tested using a variety of techniques. The performance tests confirmed that the technology stack was sufficient to meet the re\-quire\-ments, while the usability tests provided directions for improving the user experience.
+
+We may conclude that the application satisfies all the requirements stated in the analysis phase; however, it cannot be considered complete. First, we should recall the performance drain caused by rendering a large number of markers on~the client side in the main thread. Thus, delegating this task to a Web Worker or~the backend should be prioritized.
+
+Another possible extension briefly mentioned in relation to Requirement~\ref{itm:f-entity-management-jsonld} is to make the application follow the principles of \emph{\nameref{sec:linked-data}}. In simpler terms, the backend should generate \acs{rdf} for all types of entities. Once the application data is structured, we will be able to harness the full potential of \acs{solid} pods. For example, Van de Wynckel and Signer \cite{wynckel22} recently presented a \acs{solid}-based architecture with interoperable location data for an indoor positioning system and a prototype application. Their experience and results can serve as a valuable starting point.
+
+In addition, we identify four possible directions for future development that might be interesting from both theoretical and practical points of view.
+
+\begin{itemize}
+\item Enhance the user experience by designing a richer system of metadata and advanced use cases for entities in private storage, such as searching, tagging, grouping, filtering, etc.
+\item Enable collaboration via \acs{solid} pods. Allow users to share and comment on entities.
+\item Experiment with path-finding algorithms and heuristics to strike a new~balance between the variety of search results and optimality.
+\item Apply advanced data mining and keyword extraction techniques to improve the quality of application data.
+\end{itemize}
